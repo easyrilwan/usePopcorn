@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const tempMovieData = [
   {
@@ -47,12 +47,48 @@ const tempWatchedData = [
   },
 ];
 
+const KEY = "9501e2e8";
+
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const query = "avatar";
+
+  // USING PROMISE
+  // useEffect(() => {
+  //   fetch(`http://www.omdbapi.com/?apikey=${KEY}&S=snow`)
+  //     .then((res) => res.json())
+  //     .then((data) => setMovies(data.Search));
+  // }, []);
+
+  // USING ASYNC FUNCTION
+  useEffect(() => {
+    async function fetchMovies() {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${KEY}&S=${query}`
+        );
+
+        if (!res.ok)
+          throw new Error("Something went wrong with fetching movies");
+
+        const data = await res.json();
+        setMovies(data.Search);
+      } catch (err) {
+        console.error(err.message);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchMovies();
+  }, []);
 
   return (
     <>
@@ -61,30 +97,34 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
+        {/* <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box> */}
+
         <Box>
-          <MovieList movies={movies} />
+          {isLoading && <Loader />}
+          {isLoading && !error && <MovieList movies={movies} />}
+          {error && <ErrorMessage message={error} />}
         </Box>
 
         <Box>
           <WatchedSummary watched={watched} />
           <WatchedMoviesList watched={watched} />
         </Box>
-
-        {/* Explicit Define Props */}
-        {/* <Box element={<MovieList movies={movies} />} />
-        <Box
-          element={
-            <>
-              <WatchedSummary watched={watched} />
-              <WatchedMoviesList watched={watched} />
-            </>
-          }
-        /> */}
-
-        {/* <WatchedBox /> */}
       </Main>
     </>
   );
+}
+
+function ErrorMessage({ message }) {
+  return (
+    <p className="error">
+      <span>⛔</span>
+      {message}
+    </p>
+  );
+}
+
+function Loader() {
+  return <p className="loader">Loading...</p>;
 }
 
 function NavBar({ children }) {
