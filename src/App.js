@@ -1,8 +1,9 @@
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
 import StarRating from "./StarRating";
-import { useMovies } from "./useMovies";
-import { useLocalStorageState } from "./useLocalStorageState";
 import { useKey } from "./useKey";
+import { useLocalStorageState } from "./useLocalStorageState";
+import { useMovies } from "./useMovies";
 
 const KEY = "9501e2e8";
 
